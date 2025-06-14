@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Go conding guideline
+
+## Restriction
+
+- Use English for all comment and output text
+
+## Packages
+
+- CLI parser: https://github.com/urfave/cli/v3
+- error handling: https://github.com/m-mizutani/goerr/v2
+- LLM Client: https://github.com/m-mizutani/gollem
