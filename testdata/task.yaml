@@ -6,18 +6,21 @@ defaults:
 
 tasks:
   hello:
+    description: "Simple hello world task"
     steps:
       - action: stdout.write
         args:
           content: "Hello, World!"
 
   echo:
+    description: "Echo the input to stdout"
     steps:
       - action: stdout.write
         args:
           content: "{{ .output }}"
 
   file-test:
+    description: "Test file operations (create, read, delete)"
     steps:
       - action: file.write
         args:
@@ -34,6 +37,7 @@ tasks:
           path: "/tmp/test.txt"
 
   clipboard-test:
+    description: "Read content from clipboard"
     steps:
       - action: clipboard.read
       - action: stdout.write
@@ -41,6 +45,7 @@ tasks:
           content: "Clipboard content: {{ .output }}"
 
   clipboard-write-test:
+    description: "Write content to clipboard"
     steps:
       - action: clipboard.write
         args:
@@ -50,6 +55,7 @@ tasks:
           content: "Content written to clipboard successfully"
 
   clipboard-full-test:
+    description: "Full clipboard test (write and read)"
     steps:
       - action: clipboard.write
         args:
@@ -60,6 +66,7 @@ tasks:
           content: "Clipboard content: {{ .output }}"
 
   command-test:
+    description: "Execute system command and display output"
     steps:
       - action: command.run
         args:
@@ -69,6 +76,7 @@ tasks:
           content: "Command output: {{ .output }}"
 
   temp-file-test:
+    description: "Test temporary file operations"
     steps:
       - id: create_temp
         action: file.temp
@@ -87,6 +95,7 @@ tasks:
           path: "{{ .output.create_temp }}"
 
   llm-test:
+    description: "Test LLM generation with Japanese response"
     steps:
       - action: llm.generate
         system: "You are a helpful assistant."
@@ -97,6 +106,7 @@ tasks:
 
   # Template examples
   template-example:
+    description: "Demonstrate template variable usage"
     steps:
       - id: temp_file
         action: file.temp
@@ -114,6 +124,7 @@ tasks:
           path: "{{ .output.temp_file }}"
 
   file-with-args:
+    description: "Read file specified by command line argument"
     steps:
       - action: file.read
         args:
@@ -123,6 +134,7 @@ tasks:
           content: "Content of {{ .arg0 }}:\n{{ .output }}"
 
   action-id-example:
+    description: "Example of using action IDs for referencing outputs"
     steps:
       - id: first_file
         action: file.temp
@@ -137,12 +149,14 @@ tasks:
           content: "First: {{ .output.first_file }}, Second: {{ .output.second_file }}"
 
   multiple-args-example:
+    description: "Example of using multiple command line arguments"
     steps:
       - action: stdout.write
         args:
           content: "Processing {{ .arg0 }} with options {{ .arg1 }} and {{ .arg2 }}"
 
   environment-example:
+    description: "Example of using environment variables"
     steps:
       - action: file.temp
         args:

@@ -49,8 +49,9 @@ type TasksConfig map[string]TaskConfig
 
 // TaskConfig represents a single task configuration
 type TaskConfig struct {
-	Aliases []string     `yaml:"aliases"`
-	Steps   []StepConfig `yaml:"steps"`
+	Description string       `yaml:"description,omitempty"`
+	Aliases     []string     `yaml:"aliases"`
+	Steps       []StepConfig `yaml:"steps"`
 }
 
 // StepConfig represents a single step configuration

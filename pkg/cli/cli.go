@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/app"
@@ -16,7 +17,7 @@ import (
 func Run(ctx context.Context, args []string) error {
 	cmd := &cli.Command{
 		Name:  "t",
-		Usage: "LLM-powered task runner",
+		Usage: "Task runner",
 		Description: `t is a task runner that integrates LLM capabilities for various automation tasks.
 It supports file operations, LLM interactions, and MCP (Model Context Protocol) integration.
 
@@ -145,40 +146,27 @@ Examples:
 	fmt.Printf(`%s
 
 Available tasks:
-
 `, c.Usage)
 
 	// Display tasks
 	for taskName, task := range cfg.Tasks {
 		fmt.Printf("  %s", taskName)
+
+		// Show aliases if available
 		if len(task.Aliases) > 0 {
-			fmt.Printf(" (aliases: %v)", task.Aliases)
+			fmt.Printf(" ( %s )", strings.Join(task.Aliases, ", "))
 		}
-		fmt.Printf("\n")
 
-		// Show step count
-		fmt.Printf("    Steps: %d\n", len(task.Steps))
-
-		// Show first few actions
-		if len(task.Steps) > 0 {
-			fmt.Printf("    Actions: ")
-			maxActions := 3
-			for i, step := range task.Steps {
-				if i >= maxActions {
-					fmt.Printf("...")
-					break
-				}
-				if i > 0 {
-					fmt.Printf(" → ")
-				}
-				fmt.Printf("%s", step.Action)
-			}
-			fmt.Printf("\n")
+		// Show description if available
+		if task.Description != "" {
+			fmt.Printf(" - %s", task.Description)
 		}
+
 		fmt.Printf("\n")
 	}
 
-	fmt.Printf(`Usage:
+	fmt.Printf(`
+Usage:
   %s [options] <task-name> [arguments...]
 
 Examples:
