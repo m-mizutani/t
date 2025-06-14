@@ -218,9 +218,9 @@ defaults:
 
 **Popular Models by Provider:**
 
-- **OpenAI**: `gpt-4o`, `gpt-4`, `gpt-3.5-turbo`, `gpt-4o-mini`
-- **Claude**: `claude-3-5-sonnet-20241022`, `claude-3-haiku-20240307`, `claude-3-opus-20240229`
-- **Gemini**: `gemini-1.5-pro`, `gemini-1.5-flash`, `gemini-1.0-pro`
+- **OpenAI**: `gpt-4o`, `gpt-4.5`, `o1`, `o3-mini`, `gpt-4.1`
+- **Claude**: `claude-opus-4`, `claude-sonnet-4`, `claude-3.7-sonnet`, `claude-3.5-haiku`  
+- **Gemini**: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`
 
 ### Task Definitions (tasks)
 
