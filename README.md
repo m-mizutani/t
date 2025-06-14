@@ -1,12 +1,53 @@
-# t - Task Runner
+# t - Task Runner with LLM
 
-A flexible task runner with template support and action-based workflow.
+A flexible task runner that integrates Large Language Models with automation workflows. Build pipelines that combine AI text processing with file operations, command execution, and system automation.
 
 ## Features
 
+- **LLM Integration**: Built-in support for OpenAI GPT, Anthropic Claude, and Google Gemini
+- **AI Workflows**: Chain LLM responses with file operations and command execution
 - **Template Variables**: Access command line arguments, environment variables, and action outputs
-- **Action-based Workflow**: Modular actions for file operations, command execution, and more
+- **Action-based Architecture**: Modular actions for file operations, clipboard management, and more
 - **Configuration-driven**: YAML-based task definitions
+- **Session Management**: Maintain conversation context across multiple LLM interactions
+
+## Quick Start
+
+Create workflows that combine AI capabilities with system automation:
+
+```yaml
+defaults:
+  llm:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.3
+
+tasks:
+  ai-summary:
+    steps:
+      - action: file.read
+        args:
+          path: "document.txt"
+
+      - action: llm.generate
+        args:
+          system: "You are a skilled summarizer."
+          prompt: "Please summarize this document:\n{{ .output }}"
+
+      - action: file.write
+        args:
+          path: "summary.txt"
+          content: "{{ .output }}"
+
+      - action: stdout.write
+        args:
+          content: "Summary saved to summary.txt"
+```
+
+Run with:
+```bash
+t ai-summary
+```
 
 ## Template Variables
 
@@ -28,40 +69,72 @@ The following template variables are available in action parameters:
 
 ## Example Usage
 
+### Clipboard Processing
+Transform clipboard content with AI:
+
 ```yaml
-defaults:
-  llm:
-    provider: "openai"
-    model: "gpt-4"
-    temperature: 0.3
-
 tasks:
-  example:
+  clipboard-enhance:
     steps:
-      - id: create_file
-        action: file.temp
+      - action: clipboard.read
+      
+      - action: llm.generate
         args:
-          content: "Hello {{ .arg0 }}!"
+          system: "You are a professional writer. Improve clarity and readability."
+          prompt: "Please enhance this text:\n{{ .output }}"
+      
+      - action: clipboard.write
+        args:
+          content: "{{ .output }}"
+      
+      - action: stdout.write
+        args:
+          content: "Enhanced text copied to clipboard"
+```
 
-      - id: show_file_path
-        action: stdout.write
-        args:
-          content: "Created file: {{ .output }}"
+### Document Translation
+Translate documentation files:
 
-      - id: show_specific_output
-        action: stdout.write
+```yaml
+tasks:
+  translate-docs:
+    steps:
+      - action: file.read
         args:
-          content: "File from create_file: {{ .output.create_file }}"
-
-      - id: show_env
-        action: stdout.write
+          path: "{{ .arg0 }}"
+      
+      - action: llm.generate
         args:
-          content: "User: {{ .env.USER }}"
+          system: "You are a professional translator."
+          prompt: "Translate this to {{ .arg1 }}:\n{{ .output }}"
+      
+      - action: file.write
+        args:
+          path: "{{ .arg0 }}.{{ .arg1 }}"
+          content: "{{ .output }}"
 ```
 
 Run with:
 ```bash
-go run . -c config.yaml example "World"
+t translate-docs README.md japanese
+```
+
+### Interactive AI Sessions
+Maintain conversation context:
+
+```yaml
+tasks:
+  chat:
+    steps:
+      - action: llm.session
+        args:
+          session_id: "coding-assistant"
+          system: "You are a helpful coding assistant."
+          prompt: "{{ .arg0 }}"
+      
+      - action: stdout.write
+        args:
+          content: "{{ .output }}"
 ```
 
 ## Template Syntax Summary
