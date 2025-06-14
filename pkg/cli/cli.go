@@ -1,9 +1,13 @@
 package cli
 
 import (
+	"bufio"
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/m-mizutani/goerr/v2"
@@ -12,6 +16,9 @@ import (
 	"github.com/m-mizutani/t/pkg/logger"
 	"github.com/urfave/cli/v3"
 )
+
+//go:embed template.yaml
+var configTemplate string
 
 // Run is the main entry point for the CLI application
 func Run(ctx context.Context, args []string) error {
@@ -27,7 +34,9 @@ Usage:
 Examples:
   t hello                        # Run hello task
   t echo "Hello World"           # Run echo task with argument
-  t --config custom.yaml my-task # Run with custom config file`,
+  t --config custom.yaml my-task # Run with custom config file
+  t --init                       # Initialize task.yaml with template
+  t --init --config custom.yaml  # Initialize custom.yaml with template`,
 		ArgsUsage: "<task-name> [arguments...]",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -46,6 +55,11 @@ Examples:
 				Name:    "verbose",
 				Aliases: []string{"v"},
 				Usage:   "Enable verbose output",
+			},
+			&cli.BoolFlag{
+				Name:    "init",
+				Aliases: []string{"i"},
+				Usage:   "Initialize configuration file with template",
 			},
 		},
 		Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
@@ -67,6 +81,11 @@ Examples:
 
 // runTaskAction handles task execution
 func runTaskAction(ctx context.Context, c *cli.Command) error {
+	// Handle init command
+	if c.Bool("init") {
+		return initConfig(ctx, c)
+	}
+
 	// Get logger from context
 	appLogger := logger.FromContext(ctx)
 
@@ -91,6 +110,57 @@ func runTaskAction(ctx context.Context, c *cli.Command) error {
 	}
 
 	return nil
+}
+
+// initConfig initializes configuration file with template
+func initConfig(ctx context.Context, c *cli.Command) error {
+	configPath := c.String("config")
+
+	// Check if file already exists
+	if _, err := os.Stat(configPath); err == nil {
+		// File exists, ask for confirmation
+		fmt.Printf("Configuration file already exists: %s\n", configPath)
+		fmt.Print("Do you want to overwrite it? (y/N): ")
+
+		reader := bufio.NewReader(os.Stdin)
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			return goerr.Wrap(err, "failed to read user input")
+		}
+
+		response = strings.TrimSpace(strings.ToLower(response))
+		if response != "y" && response != "yes" {
+			fmt.Println("Initialization cancelled.")
+			return nil
+		}
+	}
+
+	// Create directory if it doesn't exist
+	dir := filepath.Dir(configPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return goerr.Wrap(err, "failed to create directory", goerr.Value("dir", dir))
+	}
+
+	// Create template content
+	template := getConfigTemplate()
+
+	// Write template to file
+	if err := os.WriteFile(configPath, []byte(template), 0644); err != nil {
+		return goerr.Wrap(err, "failed to write config file", goerr.Value("path", configPath))
+	}
+
+	fmt.Printf("Configuration file initialized: %s\n", configPath)
+	fmt.Println("\nYou can now:")
+	fmt.Println("1. Set your API keys (OpenAI, Anthropic, etc.) in environment variables")
+	fmt.Println("2. Customize the tasks in the configuration file")
+	fmt.Println("3. Run tasks with: t <task-name>")
+
+	return nil
+}
+
+// getConfigTemplate returns the template configuration content
+func getConfigTemplate() string {
+	return configTemplate
 }
 
 // createApp creates an application instance from CLI flags

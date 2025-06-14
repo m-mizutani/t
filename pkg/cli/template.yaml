@@ -1,0 +1,57 @@
+# Task Runner Configuration
+# This file defines tasks and their execution steps
+
+defaults:
+  llm:
+    provider: gemini       # LLM provider: openai, claude, gemini
+    model: gemini-2.0-flash-exp  # Model to use
+    temperature: 0.3       # Generation creativity (0.0-1.0)
+    max_tokens: 1000       # Maximum output tokens
+    # api_key: ""          # API key (use environment variables instead)
+
+# Define your tasks here
+tasks:
+  hello:
+    description: "Simple hello world task"
+    steps:
+      - action: stdout.write
+        args:
+          content: "Hello, World!"
+
+  llm-example:
+    description: "LLM generation example"
+    steps:
+      - action: llm.generate
+        args:
+          system: "You are a helpful assistant."
+          prompt: "{{ .arg0 }}"
+      - action: stdout.write
+        args:
+          content: "{{ .output }}"
+
+# Available actions:
+# - stdout.write: Write to standard output
+# - file.read: Read file content
+# - file.write: Write content to file
+# - file.temp: Create temporary file
+# - file.delete: Delete file
+# - file.copy: Copy file
+# - file.exists: Check if file exists
+# - command.run: Execute system command
+# - llm.generate: Generate text using LLM
+# - llm.session: LLM session management
+# - clipboard.read: Read from clipboard
+# - clipboard.write: Write to clipboard
+
+# Template variables:
+# - {{ .arg0 }}, {{ .arg1 }}, ... : Command line arguments
+# - {{ .output }}: Output from previous step
+# - {{ .output.action_id }}: Output from specific action by ID
+# - {{ .env.VAR_NAME }}: Environment variables
+# - {{ .data.key }}: Metadata values
+
+# Environment variables for API keys:
+# export OPENAI_API_KEY="your-openai-api-key"
+# export ANTHROPIC_API_KEY="your-anthropic-api-key"
+# export GOOGLE_CLOUD_PROJECT="your-google-project-id"
+# export GOOGLE_CLOUD_LOCATION="us-central1"  # Optional for Gemini 
