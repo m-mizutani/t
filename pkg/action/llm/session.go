@@ -4,13 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/gollem"
-	"github.com/m-mizutani/gollem/llm/claude"
-	"github.com/m-mizutani/gollem/llm/gemini"
-	"github.com/m-mizutani/gollem/llm/openai"
 	"github.com/m-mizutani/t/pkg/action"
 	"github.com/m-mizutani/t/pkg/config"
 )
@@ -83,90 +79,13 @@ func (a *SessionAction) Execute(ctx context.Context, actx *action.Context, step 
 	agent, exists := a.agents[sessionID]
 	if !exists {
 		// Create LLM client based on provider
-		var client gollem.LLMClient
-		switch provider {
-		case "openai":
-			apiKey := getStringArg(step.Args, "api_key", llmConfig.APIKey)
-			if apiKey == "" {
-				apiKey = os.Getenv("OPENAI_API_KEY")
-			}
-			if apiKey == "" {
-				return nil, goerr.New("OpenAI API key not found in config or OPENAI_API_KEY environment variable")
-			}
-
-			opts := []openai.Option{}
-			if model != "" {
-				opts = append(opts, openai.WithModel(model))
-			}
-			if temp := getFloatArg(step.Args, "temperature", llmConfig.Temperature); temp > 0 {
-				opts = append(opts, openai.WithTemperature(float32(temp)))
-			}
-			if maxTokens := getIntArg(step.Args, "max_tokens", llmConfig.MaxTokens); maxTokens > 0 {
-				opts = append(opts, openai.WithMaxTokens(maxTokens))
-			}
-
-			client, err = openai.New(ctx, apiKey, opts...)
-			if err != nil {
-				return nil, goerr.Wrap(err, "failed to create OpenAI client")
-			}
-
-		case "claude":
-			apiKey := getStringArg(step.Args, "api_key", llmConfig.APIKey)
-			if apiKey == "" {
-				apiKey = os.Getenv("ANTHROPIC_API_KEY")
-			}
-			if apiKey == "" {
-				return nil, goerr.New("Anthropic API key not found in config or ANTHROPIC_API_KEY environment variable")
-			}
-
-			opts := []claude.Option{}
-			if model != "" {
-				opts = append(opts, claude.WithModel(model))
-			}
-			if temp := getFloatArg(step.Args, "temperature", llmConfig.Temperature); temp > 0 {
-				opts = append(opts, claude.WithTemperature(temp))
-			}
-			if maxTokens := getIntArg(step.Args, "max_tokens", llmConfig.MaxTokens); maxTokens > 0 {
-				opts = append(opts, claude.WithMaxTokens(int64(maxTokens)))
-			}
-
-			client, err = claude.New(ctx, apiKey, opts...)
-			if err != nil {
-				return nil, goerr.Wrap(err, "failed to create Claude client")
-			}
-
-		case "gemini":
-			projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-			if projectID == "" {
-				return nil, goerr.New("Google Cloud Project ID not found in GOOGLE_CLOUD_PROJECT environment variable")
-			}
-			location := os.Getenv("GOOGLE_CLOUD_LOCATION")
-			if location == "" {
-				location = "us-central1" // default location
-			}
-
-			opts := []gemini.Option{}
-			if model != "" {
-				opts = append(opts, gemini.WithModel(model))
-			}
-			if temp := getFloatArg(step.Args, "temperature", llmConfig.Temperature); temp > 0 {
-				opts = append(opts, gemini.WithTemperature(float32(temp)))
-			}
-			if maxTokens := getIntArg(step.Args, "max_tokens", llmConfig.MaxTokens); maxTokens > 0 {
-				opts = append(opts, gemini.WithMaxTokens(int32(maxTokens)))
-			}
-
-			client, err = gemini.New(ctx, projectID, location, opts...)
-			if err != nil {
-				return nil, goerr.Wrap(err, "failed to create Gemini client")
-			}
-
-		default:
-			return nil, goerr.New("unsupported LLM provider", goerr.Value("provider", provider))
+		clientInfo, err := createLLMClient(ctx, actx, step)
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to create LLM client")
 		}
 
 		// Create agent for this session
-		agent = gollem.New(client)
+		agent = gollem.New(clientInfo.Client)
 		a.agents[sessionID] = agent
 	}
 

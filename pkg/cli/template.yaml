@@ -7,7 +7,19 @@ defaults:
     model: gemini-2.0-flash-exp  # Model to use
     temperature: 0.3       # Generation creativity (0.0-1.0)
     max_tokens: 1000       # Maximum output tokens
-    # api_key: ""          # API key (use environment variables instead)
+
+  # Provider-specific settings
+  # Note: Environment variables are prioritized over config file values
+  gemini:
+    project_id: "<your-project-id>"         # Google Cloud Project ID (env: GOOGLE_CLOUD_PROJECT)
+    location: "us-central1" # Google Cloud location (env: GOOGLE_CLOUD_LOCATION, optional, default: us-central1)
+
+  openai:
+    api_key: "<your-openai-api-key>"        # OpenAI API key (env: OPENAI_API_KEY)
+
+  claude:
+    api_key: "<your-anthropic-api-key>"     # Anthropic API key (env: ANTHROPIC_API_KEY)
+
 
 # Define your tasks here
 tasks:
@@ -50,7 +62,12 @@ tasks:
 # - {{ .env.VAR_NAME }}: Environment variables
 # - {{ .data.key }}: Metadata values
 
-# Environment variables for API keys:
+# Authentication priority (high to low):
+# 1. Environment variables (recommended for security)
+# 2. Configuration file values
+# 3. Legacy config format (for backward compatibility)
+#
+# Environment variables for authentication:
 # export OPENAI_API_KEY="your-openai-api-key"
 # export ANTHROPIC_API_KEY="your-anthropic-api-key"
 # export GOOGLE_CLOUD_PROJECT="your-google-project-id"

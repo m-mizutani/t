@@ -18,7 +18,10 @@ type Config struct {
 
 // DefaultConfig represents default settings
 type DefaultConfig struct {
-	LLM LLMConfig `yaml:"llm"`
+	LLM    LLMConfig    `yaml:"llm"`
+	OpenAI OpenAIConfig `yaml:"openai,omitempty"`
+	Claude ClaudeConfig `yaml:"claude,omitempty"`
+	Gemini GeminiConfig `yaml:"gemini,omitempty"`
 }
 
 // LLMConfig represents LLM configuration
@@ -33,6 +36,25 @@ type LLMConfig struct {
 	PresencePenalty  float64 `yaml:"presence_penalty,omitempty"`
 	Timeout          int     `yaml:"timeout,omitempty"`
 	APIKey           string  `yaml:"api_key,omitempty"`
+	// Gemini固有の設定
+	ProjectID string `yaml:"project_id,omitempty"`
+	Location  string `yaml:"location,omitempty"`
+}
+
+// OpenAIConfig represents OpenAI-specific configuration
+type OpenAIConfig struct {
+	APIKey string `yaml:"api_key,omitempty"`
+}
+
+// ClaudeConfig represents Claude/Anthropic-specific configuration
+type ClaudeConfig struct {
+	APIKey string `yaml:"api_key,omitempty"`
+}
+
+// GeminiConfig represents Gemini-specific configuration
+type GeminiConfig struct {
+	ProjectID string `yaml:"project_id,omitempty"`
+	Location  string `yaml:"location,omitempty"`
 }
 
 // MCPConfig represents MCP server configuration
