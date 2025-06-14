@@ -72,7 +72,7 @@ func runTaskAction(ctx context.Context, c *cli.Command) error {
 	// Check if task name is provided
 	taskName := c.Args().First()
 	if taskName == "" {
-		return showUsage(c)
+		return showTasks(ctx, c)
 	}
 
 	// Create application instance
@@ -101,9 +101,22 @@ func createApp(c *cli.Command, appLogger *slog.Logger) (*app.App, error) {
 	return app.New(appCfg)
 }
 
-// showUsage displays usage information when no task is specified
-func showUsage(c *cli.Command) error {
-	fmt.Printf(`%s
+// showTasks displays available tasks when no task is specified
+func showTasks(ctx context.Context, c *cli.Command) error {
+	// Create application instance to access configuration
+	appInstance, err := createApp(c, logger.FromContext(ctx))
+	if err != nil {
+		return goerr.Wrap(err, "failed to create application")
+	}
+
+	cfg := appInstance.GetConfig()
+
+	if len(cfg.Tasks) == 0 {
+		fmt.Printf(`%s
+
+No tasks available.
+
+Please define tasks in your configuration file (%s).
 
 Usage:
   %s [options] <task-name> [arguments...]
@@ -118,13 +131,61 @@ Examples:
   %s hello                        # Run hello task
   %s echo "Hello World"           # Run echo task with argument
   %s --config custom.yaml my-task # Run with custom config file
-  %s --log-level debug my-task    # Run with debug logging
-
-Get started by creating a task.yaml configuration file in the default location
-or specify a custom config file with --config flag.
 `,
-		c.Usage,
-		c.Name,
+			c.Usage,
+			c.String("config"),
+			c.Name,
+			c.Name,
+			c.Name,
+			c.Name,
+		)
+		return nil
+	}
+
+	fmt.Printf(`%s
+
+Available tasks:
+
+`, c.Usage)
+
+	// Display tasks
+	for taskName, task := range cfg.Tasks {
+		fmt.Printf("  %s", taskName)
+		if len(task.Aliases) > 0 {
+			fmt.Printf(" (aliases: %v)", task.Aliases)
+		}
+		fmt.Printf("\n")
+
+		// Show step count
+		fmt.Printf("    Steps: %d\n", len(task.Steps))
+
+		// Show first few actions
+		if len(task.Steps) > 0 {
+			fmt.Printf("    Actions: ")
+			maxActions := 3
+			for i, step := range task.Steps {
+				if i >= maxActions {
+					fmt.Printf("...")
+					break
+				}
+				if i > 0 {
+					fmt.Printf(" → ")
+				}
+				fmt.Printf("%s", step.Action)
+			}
+			fmt.Printf("\n")
+		}
+		fmt.Printf("\n")
+	}
+
+	fmt.Printf(`Usage:
+  %s [options] <task-name> [arguments...]
+
+Examples:
+  %s hello                        # Run hello task
+  %s echo "Hello World"           # Run echo task with argument
+  %s --config custom.yaml my-task # Run with custom config file
+`,
 		c.Name,
 		c.Name,
 		c.Name,
