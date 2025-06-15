@@ -21,9 +21,6 @@ func (o OutputMap) String() string {
 	return ""
 }
 
-// ArgsMap provides structured access to arguments
-type ArgsMap map[string]string
-
 // ProcessTemplate processes a template string with structured dot notation
 func ProcessTemplate(templateStr string, actx *Context, templateName string) (string, error) {
 	if templateStr == "" {
@@ -41,17 +38,10 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 		outputMap[actionID] = output
 	}
 
-	// Create args map for structured access (for {{ index .args "0" }})
-	argsMap := make(ArgsMap)
-	for i, arg := range actx.Args {
-		argsMap[strconv.Itoa(i)] = arg
-	}
-
 	// Create data map for template execution
 	data := map[string]interface{}{
 		// Structured access
 		"output": outputMap,
-		"args":   argsMap,
 
 		// Input support
 		"input": actx.Input,
@@ -76,32 +66,8 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 	}
 	data["data"] = metaData
 
-	// Create template with minimal custom functions (keeping only index for backward compatibility)
-	tmpl := template.New(templateName).Funcs(template.FuncMap{
-		"index": func(m interface{}, key interface{}) interface{} {
-			switch mapVal := m.(type) {
-			case map[string]string:
-				if keyStr, ok := key.(string); ok {
-					return mapVal[keyStr]
-				}
-				if keyInt, ok := key.(int); ok {
-					return mapVal[strconv.Itoa(keyInt)]
-				}
-			case []string:
-				if keyInt, ok := key.(int); ok && keyInt >= 0 && keyInt < len(mapVal) {
-					return mapVal[keyInt]
-				}
-			case ArgsMap:
-				if keyStr, ok := key.(string); ok {
-					return mapVal[keyStr]
-				}
-				if keyInt, ok := key.(int); ok {
-					return mapVal[strconv.Itoa(keyInt)]
-				}
-			}
-			return ""
-		},
-	})
+	// Create template without custom functions (using only standard template syntax)
+	tmpl := template.New(templateName)
 
 	// Parse and execute template
 	tmpl, err := tmpl.Parse(templateStr)

@@ -101,49 +101,6 @@ func TestProcessTemplate_Args(t *testing.T) {
 	}
 }
 
-func TestProcessTemplate_ArgsIndexAccess(t *testing.T) {
-	actx := &Context{
-		Args: []string{"first", "second", "third"},
-		Env:  map[string]string{},
-		Data: map[string]interface{}{},
-	}
-
-	tests := []struct {
-		name     string
-		template string
-		expected string
-	}{
-		{
-			name:     "index 0",
-			template: `{{ index .args "0" }}`,
-			expected: "first",
-		},
-		{
-			name:     "index 1",
-			template: `{{ index .args "1" }}`,
-			expected: "second",
-		},
-		{
-			name:     "index 2",
-			template: `{{ index .args "2" }}`,
-			expected: "third",
-		},
-		{
-			name:     "index with int",
-			template: `{{ index .args 0 }}`,
-			expected: "first",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := ProcessTemplate(tt.template, actx, "test")
-			require.NoError(t, err)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
 func TestProcessTemplate_Environment(t *testing.T) {
 	actx := &Context{
 		Args: []string{},
@@ -447,57 +404,6 @@ func TestProcessTemplate_InvalidTemplate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := ProcessTemplate(tt.template, actx, "test")
 			assert.Error(t, err)
-		})
-	}
-}
-
-func TestProcessTemplate_IndexFunction(t *testing.T) {
-	actx := &Context{
-		Args: []string{"first", "second", "third"},
-		Env: map[string]string{
-			"VAR1": "value1",
-			"VAR2": "value2",
-		},
-		Data: map[string]interface{}{},
-	}
-
-	tests := []struct {
-		name     string
-		template string
-		expected string
-	}{
-		{
-			name:     "index args with string key",
-			template: `{{ index .args "0" }}`,
-			expected: "first",
-		},
-		{
-			name:     "index args with int key",
-			template: `{{ index .args 1 }}`,
-			expected: "second",
-		},
-		{
-			name:     "index env with string key",
-			template: `{{ index .env "VAR1" }}`,
-			expected: "value1",
-		},
-		{
-			name:     "index with invalid key",
-			template: `{{ index .args 99 }}`,
-			expected: "",
-		},
-		{
-			name:     "index with invalid map",
-			template: `{{ index .nonexistent "key" }}`,
-			expected: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := ProcessTemplate(tt.template, actx, "test")
-			require.NoError(t, err)
-			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
