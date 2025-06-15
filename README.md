@@ -136,10 +136,6 @@ tasks:
 - `{{ .env.VAR_NAME }}`: Environment variables
 - `{{ .data.key }}`: Metadata
 
-**Alternative Syntax:**
-- `{{ index .args 0 }}`: Alternative argument access
-- `{{ index .args 1 }}`: Second argument, etc.
-
 ## Actions
 
 ### file.temp

@@ -76,33 +76,8 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 	}
 	data["data"] = metaData
 
-	// Create template with custom functions
+	// Create template with minimal custom functions (keeping only index for backward compatibility)
 	tmpl := template.New(templateName).Funcs(template.FuncMap{
-		// Function support
-		"arg": func(i int) string {
-			if i >= 0 && i < len(actx.Args) {
-				return actx.Args[i]
-			}
-			return ""
-		},
-		"env": func(name string) string {
-			if value, exists := actx.Env[name]; exists {
-				return value
-			}
-			return ""
-		},
-		"meta": func(key string) interface{} {
-			if value, exists := actx.Data[key]; exists {
-				return value
-			}
-			return ""
-		},
-		"output_of": func(actionID string) interface{} {
-			if output, exists := actx.ActionOutputs[actionID]; exists {
-				return output
-			}
-			return ""
-		},
 		"index": func(m interface{}, key interface{}) interface{} {
 			switch mapVal := m.(type) {
 			case map[string]string:
