@@ -26,7 +26,7 @@ func (a *CopyAction) Description() string {
 }
 
 // Execute runs the file.copy action
-func (a *CopyAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+func (a *CopyAction) Execute(ctx context.Context, actx *action.Context, step config.LegacyStepConfig) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing file.copy action")
 

@@ -5,8 +5,8 @@ defaults:
   llm:
     provider: gemini       # LLM provider: openai, claude, gemini
     model: gemini-2.0-flash-exp  # Model to use
-    temperature: 0.3       # Generation creativity (0.0-1.0)
-    max_tokens: 1000       # Maximum output tokens
+    # temperature: 0.3       # Generation creativity (0.0-1.0)
+    # max_tokens: 1000       # Maximum output tokens
 
   # Provider-specific settings
   # Note: Environment variables are prioritized over config file values
@@ -14,11 +14,11 @@ defaults:
     project_id: "<your-project-id>"         # Google Cloud Project ID (env: GOOGLE_CLOUD_PROJECT)
     location: "us-central1" # Google Cloud location (env: GOOGLE_CLOUD_LOCATION, optional, default: us-central1)
 
-  openai:
-    api_key: "<your-openai-api-key>"        # OpenAI API key (env: OPENAI_API_KEY)
+  # openai:
+  #   api_key: "<your-openai-api-key>"        # OpenAI API key (env: OPENAI_API_KEY)
 
-  claude:
-    api_key: "<your-anthropic-api-key>"     # Anthropic API key (env: ANTHROPIC_API_KEY)
+  # claude:
+  #   api_key: "<your-anthropic-api-key>"     # Anthropic API key (env: ANTHROPIC_API_KEY)
 
 
 # Define your tasks here
@@ -27,19 +27,16 @@ tasks:
     description: "Simple hello world task"
     steps:
       - action: stdout.write
-        args:
-          content: "Hello, World!"
+        content: "Hello, World!"
 
   llm:
     description: "LLM generation example"
     steps:
       - action: llm.generate
-        args:
-          system: "You are a helpful assistant."
-          prompt: "{{ .arg0 }}"
+        system: "You are a helpful assistant."
+        prompt: "{{ .arg0 }}"
       - action: stdout.write
-        args:
-          content: "{{ .output }}"
+        content: "{{ .output }}"
 
 # Available actions:
 # - stdout.write: Write to standard output

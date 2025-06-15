@@ -71,13 +71,26 @@ type TasksConfig map[string]TaskConfig
 
 // TaskConfig represents a single task configuration
 type TaskConfig struct {
-	Description string       `yaml:"description,omitempty"`
-	Aliases     []string     `yaml:"aliases"`
-	Steps       []StepConfig `yaml:"steps"`
+	Description string          `yaml:"description,omitempty"`
+	Aliases     []string        `yaml:"aliases"`
+	RawSteps    []RawStepConfig `yaml:"steps"` // Raw steps for initial loading
+	Steps       []StepConfig    `yaml:"-"`     // Processed typed steps
 }
 
-// StepConfig represents a single step configuration
+// RawStepConfig represents a step configuration as loaded from YAML
+type RawStepConfig struct {
+	Action string                 `yaml:"action"`
+	Raw    map[string]interface{} `yaml:",inline"`
+}
+
+// StepConfig represents a single step configuration with typed config
 type StepConfig struct {
+	Action string
+	Config interface{} // Action-specific typed configuration
+}
+
+// Legacy StepConfig for backward compatibility during migration
+type LegacyStepConfig struct {
 	ID     string                 `yaml:"id,omitempty"`
 	Action string                 `yaml:"action"`
 	Input  interface{}            `yaml:"input,omitempty"`
@@ -210,11 +223,11 @@ func (c *Config) Validate() error {
 
 	// Validate tasks
 	for taskName, task := range c.Tasks {
-		if len(task.Steps) == 0 {
+		if len(task.RawSteps) == 0 {
 			return goerr.New("task must have at least one step", goerr.Value("task", taskName))
 		}
 
-		for i, step := range task.Steps {
+		for i, step := range task.RawSteps {
 			if step.Action == "" {
 				return goerr.New("step action is required",
 					goerr.Value("task", taskName),

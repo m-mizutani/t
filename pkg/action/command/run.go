@@ -10,8 +10,14 @@ import (
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/action"
-	"github.com/m-mizutani/t/pkg/config"
 )
+
+// CommandRunConfig represents configuration for command.run action
+type CommandRunConfig struct {
+	ID  string `yaml:"id,omitempty"`
+	Cmd string `yaml:"cmd" validate:"required"`
+	Dir string `yaml:"dir,omitempty"`
+}
 
 // RunAction implements command.run action
 type RunAction struct{}
@@ -26,36 +32,34 @@ func (a *RunAction) Description() string {
 	return "Execute a shell command"
 }
 
-// Execute runs the command.run action
-func (a *RunAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+// NewConfig returns a new instance of CommandRunConfig
+func (a *RunAction) NewConfig() interface{} {
+	return &CommandRunConfig{}
+}
+
+// Execute runs the command.run action with typed configuration
+func (a *RunAction) Execute(ctx context.Context, actx *action.Context, config interface{}) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing command.run action")
 
-	// Get command from step args
-	cmdArg, exists := step.Args["cmd"]
-	if !exists {
-		return nil, goerr.New("cmd argument is required for command.run action")
-	}
-
-	cmdStr, ok := cmdArg.(string)
+	// Type assertion to get our config
+	cfg, ok := config.(*CommandRunConfig)
 	if !ok {
-		return nil, goerr.New("cmd argument must be string")
+		return nil, goerr.New("invalid config type for command.run")
 	}
 
-	// Process template
-	command, err := action.ProcessTemplate(cmdStr, actx, "command.run.cmd")
+	// Process template for command
+	command, err := action.ProcessTemplate(cfg.Cmd, actx, "command.run.cmd")
 	if err != nil {
 		return nil, goerr.Wrap(err, "failed to process command template")
 	}
 
-	// Get working directory (optional)
+	// Process template for working directory if provided
 	var workDir string
-	if dirArg, exists := step.Args["dir"]; exists {
-		if dirStr, ok := dirArg.(string); ok {
-			workDir, err = action.ProcessTemplate(dirStr, actx, "command.run.dir")
-			if err != nil {
-				return nil, goerr.Wrap(err, "failed to process dir template")
-			}
+	if cfg.Dir != "" {
+		workDir, err = action.ProcessTemplate(cfg.Dir, actx, "command.run.dir")
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to process dir template")
 		}
 	}
 
@@ -120,19 +124,4 @@ func (a *RunAction) Execute(ctx context.Context, actx *action.Context, step conf
 	}
 
 	return result, nil
-}
-
-// getArgValue extracts and processes template for argument value
-func (a *RunAction) getArgValue(args map[string]interface{}, key string, actx *action.Context) (string, error) {
-	value, exists := args[key]
-	if !exists {
-		return "", nil
-	}
-
-	valueStr, ok := value.(string)
-	if !ok {
-		return "", goerr.New("argument must be string", goerr.Value("key", key), goerr.Value("value", value))
-	}
-
-	return action.ProcessTemplate(valueStr, actx, "command.run."+key)
 }

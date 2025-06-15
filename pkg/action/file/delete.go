@@ -7,8 +7,13 @@ import (
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/action"
-	"github.com/m-mizutani/t/pkg/config"
 )
+
+// FileDeleteConfig represents configuration for file.delete action
+type FileDeleteConfig struct {
+	ID   string `yaml:"id,omitempty"`
+	Path string `yaml:"path" validate:"required"`
+}
 
 // DeleteAction implements file.delete action
 type DeleteAction struct{}
@@ -23,24 +28,24 @@ func (a *DeleteAction) Description() string {
 	return "Delete a file or directory"
 }
 
-// Execute runs the file.delete action
-func (a *DeleteAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+// NewConfig returns a new instance of FileDeleteConfig
+func (a *DeleteAction) NewConfig() interface{} {
+	return &FileDeleteConfig{}
+}
+
+// Execute runs the file.delete action with typed configuration
+func (a *DeleteAction) Execute(ctx context.Context, actx *action.Context, config interface{}) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing file.delete action")
 
-	// Get path from Args
-	pathArg, exists := step.Args["path"]
-	if !exists {
-		return nil, goerr.New("path argument is required for file.delete action")
-	}
-
-	pathStr, ok := pathArg.(string)
+	// Type assertion to get our config
+	cfg, ok := config.(*FileDeleteConfig)
 	if !ok {
-		return nil, goerr.New("path argument must be string")
+		return nil, goerr.New("invalid config type for file.delete")
 	}
 
-	// Process template
-	path, err := action.ProcessTemplate(pathStr, actx, "file.delete")
+	// Process template for path
+	path, err := action.ProcessTemplate(cfg.Path, actx, "file.delete.path")
 	if err != nil {
 		return nil, goerr.Wrap(err, "failed to process path template")
 	}

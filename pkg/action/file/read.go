@@ -7,8 +7,13 @@ import (
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/action"
-	"github.com/m-mizutani/t/pkg/config"
 )
+
+// FileReadConfig represents configuration for file.read action
+type FileReadConfig struct {
+	ID   string `yaml:"id,omitempty"`
+	Path string `yaml:"path" validate:"required"`
+}
 
 // ReadAction implements file.read action
 type ReadAction struct{}
@@ -23,24 +28,24 @@ func (a *ReadAction) Description() string {
 	return "Read content from a file"
 }
 
-// Execute runs the file.read action
-func (a *ReadAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+// NewConfig returns a new instance of FileReadConfig
+func (a *ReadAction) NewConfig() interface{} {
+	return &FileReadConfig{}
+}
+
+// Execute runs the file.read action with typed configuration
+func (a *ReadAction) Execute(ctx context.Context, actx *action.Context, config interface{}) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing file.read action")
 
-	// Get file path
-	pathArg, exists := step.Args["path"]
-	if !exists {
-		return nil, goerr.New("path argument is required for file.read action")
-	}
-
-	pathStr, ok := pathArg.(string)
+	// Type assertion to get our config
+	cfg, ok := config.(*FileReadConfig)
 	if !ok {
-		return nil, goerr.New("path argument must be string")
+		return nil, goerr.New("invalid config type for file.read")
 	}
 
 	// Process template
-	filePath, err := action.ProcessTemplate(pathStr, actx, "file.read")
+	filePath, err := action.ProcessTemplate(cfg.Path, actx, "file.read.path")
 	if err != nil {
 		return nil, goerr.Wrap(err, "failed to process path template")
 	}

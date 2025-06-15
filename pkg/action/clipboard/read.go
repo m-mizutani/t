@@ -9,8 +9,12 @@ import (
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/action"
-	"github.com/m-mizutani/t/pkg/config"
 )
+
+// ClipboardReadConfig represents configuration for clipboard.read action
+type ClipboardReadConfig struct {
+	ID string `yaml:"id,omitempty"`
+}
 
 // ReadAction implements clipboard.read action
 type ReadAction struct{}
@@ -25,10 +29,21 @@ func (a *ReadAction) Description() string {
 	return "Read content from clipboard"
 }
 
-// Execute runs the clipboard.read action
-func (a *ReadAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+// NewConfig returns a new instance of ClipboardReadConfig
+func (a *ReadAction) NewConfig() interface{} {
+	return &ClipboardReadConfig{}
+}
+
+// Execute runs the clipboard.read action with typed configuration
+func (a *ReadAction) Execute(ctx context.Context, actx *action.Context, config interface{}) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing clipboard.read action")
+
+	// Type assertion to get our config
+	_, ok := config.(*ClipboardReadConfig)
+	if !ok {
+		return nil, goerr.New("invalid config type for clipboard.read")
+	}
 
 	// Initialize clipboard
 	if err := clipboard.Init(); err != nil {

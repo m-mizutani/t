@@ -24,7 +24,7 @@ func (a *ExistsAction) Description() string {
 }
 
 // Execute runs the file.exists action
-func (a *ExistsAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+func (a *ExistsAction) Execute(ctx context.Context, actx *action.Context, step config.LegacyStepConfig) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing file.exists action")
 

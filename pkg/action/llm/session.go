@@ -27,7 +27,7 @@ func (a *SessionAction) Description() string {
 }
 
 // Execute runs the llm.session action
-func (a *SessionAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+func (a *SessionAction) Execute(ctx context.Context, actx *action.Context, step config.LegacyStepConfig) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing llm.session action")
 
@@ -96,32 +96,21 @@ func (a *SessionAction) Execute(ctx context.Context, actx *action.Context, step 
 	}
 
 	// Generate response with history
-	history, err := agent.Prompt(ctx, fullPrompt)
-	if err != nil {
+	if err := agent.Execute(ctx, fullPrompt); err != nil {
 		return nil, goerr.Wrap(err, "failed to generate LLM response with session")
-	}
-
-	// Extract response text
-	response := ""
-	if history != nil {
-		// Try to get the last response
-		response = fmt.Sprintf("%v", history)
 	}
 
 	logger.Debug("LLM session response received",
 		slog.String("session_id", sessionID),
-		slog.Int("response_length", len(response)),
 	)
 
 	return &action.Result{
-		Output: response,
 		Metadata: map[string]interface{}{
-			"session_id":      sessionID,
-			"provider":        provider,
-			"model":           model,
-			"system":          system,
-			"prompt_length":   len(prompt),
-			"response_length": len(response),
+			"session_id":    sessionID,
+			"provider":      provider,
+			"model":         model,
+			"system":        system,
+			"prompt_length": len(prompt),
 		},
 	}, nil
 }

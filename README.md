@@ -8,8 +8,10 @@ A flexible task runner that integrates Large Language Models with automation wor
 - **AI Workflows**: Chain LLM responses with file operations and command execution
 - **Template Variables**: Access command line arguments, environment variables, and action outputs
 - **Action-based Architecture**: Modular actions for file operations, clipboard management, and more
-- **Configuration-driven**: YAML-based task definitions
+- **Configuration-driven**: YAML-based task definitions with consistent parameter syntax
 - **Session Management**: Maintain conversation context across multiple LLM interactions
+- **Type Safety**: Built-in parameter validation at configuration load time
+- **Unified Syntax**: All action parameters use consistent top-level YAML structure
 
 ## Quick Start
 
@@ -26,22 +28,18 @@ tasks:
   ai-summary:
     steps:
       - action: file.read
-        args:
-          path: "document.txt"
+        path: "document.txt"
 
       - action: llm.generate
-        args:
-          system: "You are a skilled summarizer."
-          prompt: "Please summarize this document:\n{{ .output }}"
+        system: "You are a skilled summarizer."
+        prompt: "Please summarize this document:\n{{ .output }}"
 
       - action: file.write
-        args:
-          path: "summary.txt"
-          content: "{{ .output }}"
+        path: "summary.txt"
+        content: "{{ .output }}"
 
       - action: stdout.write
-        args:
-          content: "Summary saved to summary.txt"
+        content: "Summary saved to summary.txt"
 ```
 
 Run with:
@@ -79,17 +77,14 @@ tasks:
       - action: clipboard.read
       
       - action: llm.generate
-        args:
-          system: "You are a professional writer. Improve clarity and readability."
-          prompt: "Please enhance this text:\n{{ .output }}"
+        system: "You are a professional writer. Improve clarity and readability."
+        prompt: "Please enhance this text:\n{{ .output }}"
       
       - action: clipboard.write
-        args:
-          content: "{{ .output }}"
+        content: "{{ .output }}"
       
       - action: stdout.write
-        args:
-          content: "Enhanced text copied to clipboard"
+        content: "Enhanced text copied to clipboard"
 ```
 
 ### Document Translation
@@ -100,18 +95,15 @@ tasks:
   translate-docs:
     steps:
       - action: file.read
-        args:
-          path: "{{ .arg0 }}"
+        path: "{{ .arg0 }}"
       
       - action: llm.generate
-        args:
-          system: "You are a professional translator."
-          prompt: "Translate this to {{ .arg1 }}:\n{{ .output }}"
+        system: "You are a professional translator."
+        prompt: "Translate this to {{ .arg1 }}:\n{{ .output }}"
       
       - action: file.write
-        args:
-          path: "{{ .arg0 }}.{{ .arg1 }}"
-          content: "{{ .output }}"
+        path: "{{ .arg0 }}.{{ .arg1 }}"
+        content: "{{ .output }}"
 ```
 
 Run with:
@@ -127,14 +119,12 @@ tasks:
   chat:
     steps:
       - action: llm.session
-        args:
-          session_id: "coding-assistant"
-          system: "You are a helpful coding assistant."
-          prompt: "{{ .arg0 }}"
+        session_id: "coding-assistant"
+        system: "You are a helpful coding assistant."
+        prompt: "{{ .arg0 }}"
       
       - action: stdout.write
-        args:
-          content: "{{ .output }}"
+        content: "{{ .output }}"
 ```
 
 ## Template Syntax Summary
@@ -156,15 +146,42 @@ tasks:
 Creates a temporary file with specified content.
 
 **Parameters:**
-- `content` (string): File content (supports templates)
+- `id` (optional): Step identifier for referencing output
+- `content` (optional): File content (supports templates)
+
+**Example:**
+```yaml
+- action: file.temp
+  id: temp-file
+  content: "Temporary content"
+```
 
 **Output:** Path to the created temporary file
+
+---
+
+### file.delete
+Deletes a file from the filesystem.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `path` (required): Path to the file to delete
+
+**Example:**
+```yaml
+- action: file.delete
+  path: "/tmp/unwanted-file.txt"
+```
+
+**Output:** Path of the deleted file
 
 ### stdout.write
 Writes content to standard output.
 
 **Parameters:**
-- `content` (string): Content to write (supports templates)
+- `id` (optional): Step identifier for referencing output
+- `content` (optional): Content to write (supports templates)
+- `no_newline` (optional): If true, don't add automatic newline (default: false)
 
 **Output:** The written content
 
@@ -172,8 +189,9 @@ Writes content to standard output.
 Executes a shell command.
 
 **Parameters:**
-- `command` (string): Command to execute (supports templates)
-- `args` ([]string): Command arguments (supports templates)
+- `id` (optional): Step identifier for referencing output
+- `cmd` (required): Command to execute (supports templates)
+- `dir` (optional): Working directory (supports templates)
 
 **Output:** Command output (stdout)
 
@@ -192,8 +210,7 @@ tasks:
   my_task:
     steps:
       - action: stdout.write
-        args:
-          content: "Hello {{ .arg0 }}!"
+        content: "Hello {{ .arg0 }}!"
 ```
 
 ## Installation
@@ -245,8 +262,8 @@ tasks:
   task-name:
     steps:
       - action: action-name
-        args:
-          key: value
+        param1: value1
+        param2: value2
 ```
 
 ### Default Settings (defaults)
@@ -304,11 +321,10 @@ tasks:
   my-task:
     steps:
       - action: action-name
-        args:
-          param1: value1
-          param2: value2
+        param1: value1
+        param2: value2
       - action: another-action
-        # args are optional
+        # parameters are at top level
 ```
 
 ## Available Actions
@@ -317,107 +333,187 @@ tasks:
 
 #### file.read - Read File
 
+Read content from a file.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `path` (required): Path to the file to read
+
+**Example:**
 ```yaml
 - action: file.read
-  args:
-    path: "/path/to/file.txt"
+  id: read-config
+  path: "/path/to/file.txt"
 ```
+
+**Output:** File content as string
+
+---
 
 #### file.write - Write File
 
+Write content to a file. Creates parent directories if they don't exist.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `path` (required): Path to the output file
+- `content` (optional): Content to write (uses input from previous step if not specified)
+- `mode` (optional): File permissions (e.g., "0644", defaults to 0644)
+
+**Example:**
 ```yaml
 - action: file.write
-  args:
-    path: "/path/to/output.txt"
-    content: "Content to write"
-    mode: 0644  # File permissions (optional)
+  id: save-result
+  path: "/path/to/output.txt"
+  content: "Content to write"
+  mode: "0644"
 ```
 
-#### file.temp - Create Temporary File
+**Output:** Written file path
 
-```yaml
-- action: file.temp
-  args:
-    content: "Temporary file content"
-    prefix: "temp-"     # Filename prefix
-    suffix: ".txt"      # Filename suffix
-    dir: "/tmp"         # Creation directory (optional)
-```
-
-#### file.delete - Delete File
-
-```yaml
-- action: file.delete
-  args:
-    path: "/path/to/file.txt"
-```
+---
 
 ### 2. Standard Output
 
 #### stdout.write - Write to Standard Output
 
+Write content to stdout with optional newline control.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `content` (optional): Content to display (uses input from previous step if not specified)
+- `no_newline` (optional): If true, don't add automatic newline (default: false)
+
+**Example:**
 ```yaml
 - action: stdout.write
-  args:
-    content: "Content to display"
+  content: "Content to display"
+  no_newline: false
 ```
 
-When args are omitted, displays the output from the previous step:
+When content is omitted, displays the output from the previous step:
 
 ```yaml
 - action: stdout.write
 ```
+
+**Output:** Written content as string
+
+---
 
 ### 3. Command Execution
 
 #### command.run - Execute System Command
 
+Execute a shell command with optional working directory.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `cmd` (required): Shell command to execute
+- `dir` (optional): Working directory for command execution
+
+**Example:**
 ```yaml
 - action: command.run
-  args:
-    cmd: "echo 'Hello World'"
-    dir: "/path/to/workdir"  # Working directory (optional)
+  id: list-files
+  cmd: "echo 'Hello World'"
+  dir: "/path/to/workdir"
 ```
+
+**Output:** Command stdout as string
+
+**Metadata:**
+- `command`: Executed command
+- `workdir`: Working directory
+- `stdout`: Command stdout
+- `stderr`: Command stderr
+- `success`: Whether command succeeded
+- `exit_code`: Exit code (if failed)
+
+---
 
 ### 4. Clipboard Operations
 
 #### clipboard.read - Read from Clipboard
 
+Read content from the system clipboard.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+
+**Example:**
 ```yaml
 - action: clipboard.read
+  id: clipboard-content
 ```
+
+**Output:** Clipboard content as string
+
+---
 
 #### clipboard.write - Write to Clipboard
 
+Write content to the system clipboard.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `content` (optional): Content to write to clipboard (uses input from previous step if not specified)
+
+**Example:**
 ```yaml
 - action: clipboard.write
-  args:
-    content: "Content to write to clipboard"
+  content: "Content to write to clipboard"
 ```
+
+**Output:** Written content as string
 
 ### 5. LLM Operations
 
 #### llm.generate - Generate Text
 
+Generate text using a Large Language Model.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `system` (optional): System prompt to set context/role
+- `prompt` (required): Text prompt for generation
+- `model` (optional): Override default model
+- `temperature` (optional): Override default temperature
+- `max_tokens` (optional): Override default max tokens
+
+**Example:**
 ```yaml
 - action: llm.generate
-  args:
-    system: "You are a helpful assistant."
-    prompt: "Say hello in Japanese"
-    model: gpt-4         # Override default settings
-    temperature: 0.7     # Override default settings
+  system: "You are a helpful assistant."
+  prompt: "Say hello in Japanese"
+  model: gpt-4         # Override default settings
+  temperature: 0.7     # Override default settings
 ```
+
+**Output:** Generated text as string
 
 #### llm.session - Session Management
 
+Manage persistent conversation sessions with LLMs.
+
+**Parameters:**
+- `id` (optional): Step identifier for referencing output
+- `session_id` (required): Unique identifier for the session
+- `system` (optional): System prompt for the session
+- `prompt` (required): Message to send in the session
+- `model` (optional): Override default model
+- `temperature` (optional): Override default temperature
+
+**Example:**
 ```yaml
 - action: llm.session
-  args:
-    session_id: "my-session"
-    system: "System prompt for continuous conversation"
-    prompt: "First message"
-    model: gpt-4         # Override default settings (optional)
+  session_id: "my-session"
+  system: "System prompt for continuous conversation"
+  prompt: "First message"
+  model: gpt-4         # Override default settings (optional)
 ```
+
+**Output:** LLM response as string
 
 ## Practical Usage Examples
 
@@ -428,8 +524,7 @@ tasks:
   hello:
     steps:
       - action: stdout.write
-        args:
-          content: "Hello, World!"
+        content: "Hello, World!"
 ```
 
 ### 2. File Processing Pipeline
@@ -439,88 +534,70 @@ tasks:
   file-processing:
     steps:
       - action: file.read
-        args:
-          path: "input.txt"
-      - action: llm.generate
-        args:
-          system: "Please summarize the text."
-          prompt: "Please summarize the following text:\n{{ .output }}"
+        id: input-content
+        path: "input.txt"
       - action: file.write
-        args:
-          path: "summary.txt"
-          content: "{{ .output }}"
+        id: save-processed
+        path: "output.txt"
+        content: "Processed: {{ .output }}"
       - action: stdout.write
-        args:
-          content: "Summary saved to summary.txt"
+        content: "File processed and saved to output.txt"
 ```
 
-### 3. Clipboard and LLM Integration
-
-```yaml
-tasks:
-  clipboard-translate:
-    steps:
-      - action: clipboard.read
-      - action: llm.generate
-        args:
-          system: "You are a translator."
-          prompt: "Please translate the following text to Japanese:\n{{ .output }}"
-      - action: clipboard.write
-        args:
-          content: "{{ .output }}"
-      - action: stdout.write
-        args:
-          content: "Translation result copied to clipboard"
-```
-
-### 4. Command Execution and File Saving
+### 3. Command Pipeline
 
 ```yaml
 tasks:
   system-info:
     steps:
       - action: command.run
-        args:
-          cmd: "uname -a && date && whoami"
+        id: get-info
+        cmd: "uname -a && date && whoami"
       - action: file.write
-        args:
-          path: "system-info.txt"
-          content: "{{ .output }}"
+        path: "system-info.txt"
+        content: "{{ .output }}"
       - action: stdout.write
-        args:
-          content: "System information saved to system-info.txt"
+        content: "System information saved to system-info.txt"
 ```
 
-### 5. Processing with Temporary Files
+### 4. Multi-step File Operations
 
 ```yaml
 tasks:
-  temp-processing:
+  file-chain:
     steps:
-      - id: create_temp
-        action: file.temp
-        args:
-          content: "Data to process"
-          prefix: "process-"
-          suffix: ".txt"
-      - action: command.run
-        args:
-          cmd: "wc -l {{ .output }}"
-      - action: stdout.write
-        args:
-          content: "Line count: {{ .output }}"
-      - action: file.delete
-        args:
-          path: "{{ .output.create_temp }}"
-
-  read-file-from-args:
-    steps:
+      - action: file.write
+        id: create-temp
+        path: "/tmp/example.txt"
+        content: "Hello from typed actions!"
+      
       - action: file.read
-        args:
-          path: "{{ .arg0 }}"
+        id: read-temp
+        path: "/tmp/example.txt"
+      
       - action: stdout.write
-        args:
-          content: "File {{ .arg0 }} contains:\n{{ .output }}"
+        content: "File content: {{ .output }}"
+      
+      - action: command.run
+        cmd: "rm -f /tmp/example.txt"
+```
+
+### 5. Template Usage with Action References
+
+```yaml
+tasks:
+  template-example:
+    steps:
+      - action: command.run
+        id: current-date
+        cmd: "date '+%Y-%m-%d'"
+      
+      - action: file.write
+        path: "log-{{ .output_of.current-date }}.txt"
+        content: "Log created on {{ .output_of.current-date }}"
+      
+      - action: stdout.write
+        content: "Log file created with date: {{ .output_of.current-date }}"
 ```
 
 ## Configuration File Locations

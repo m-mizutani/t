@@ -10,8 +10,13 @@ import (
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/t/pkg/action"
-	"github.com/m-mizutani/t/pkg/config"
 )
+
+// ClipboardWriteConfig represents configuration for clipboard.write action
+type ClipboardWriteConfig struct {
+	ID      string `yaml:"id,omitempty"`
+	Content string `yaml:"content,omitempty"`
+}
 
 // WriteAction implements clipboard.write action
 type WriteAction struct{}
@@ -26,15 +31,31 @@ func (a *WriteAction) Description() string {
 	return "Write content to clipboard"
 }
 
-// Execute runs the clipboard.write action
-func (a *WriteAction) Execute(ctx context.Context, actx *action.Context, step config.StepConfig) (*action.Result, error) {
+// NewConfig returns a new instance of ClipboardWriteConfig
+func (a *WriteAction) NewConfig() interface{} {
+	return &ClipboardWriteConfig{}
+}
+
+// Execute runs the clipboard.write action with typed configuration
+func (a *WriteAction) Execute(ctx context.Context, actx *action.Context, config interface{}) (*action.Result, error) {
 	logger := actx.Logger(ctx)
 	logger.Debug("Executing clipboard.write action")
 
+	// Type assertion to get our config
+	cfg, ok := config.(*ClipboardWriteConfig)
+	if !ok {
+		return nil, goerr.New("invalid config type for clipboard.write")
+	}
+
 	// Get content to write
 	var content string
-	if contentArg, exists := step.Args["content"]; exists {
-		content = fmt.Sprintf("%v", contentArg)
+	if cfg.Content != "" {
+		// Process template for content
+		processedContent, err := action.ProcessTemplate(cfg.Content, actx, "clipboard.write.content")
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to process content template")
+		}
+		content = processedContent
 	} else if actx.Input != nil {
 		content = fmt.Sprintf("%v", actx.Input)
 	} else {
