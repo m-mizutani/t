@@ -4,7 +4,7 @@
 defaults:
   llm:
     provider: gemini       # LLM provider: openai, claude, gemini
-    model: gemini-2.0-flash-exp  # Model to use
+    model: gemini-2.0-flash  # Model to use
     # temperature: 0.3       # Generation creativity (0.0-1.0)
     # max_tokens: 1000       # Maximum output tokens
 

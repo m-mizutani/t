@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/m-mizutani/goerr/v2"
 	"github.com/m-mizutani/gollem"
@@ -86,39 +87,50 @@ func (a *GenerateAction) Execute(ctx context.Context, actx *action.Context, conf
 		return nil, goerr.Wrap(err, "failed to get LLM client info")
 	}
 
-	// Create LLM agent
-	agent := gollem.New(clientInfo.Client)
-
-	// Create prompt with system message if provided
-	var fullPrompt string
+	// Create session options
+	var sessionOptions []gollem.SessionOption
 	if system != "" {
-		fullPrompt = fmt.Sprintf("System: %s\n\nUser: %s", system, prompt)
-	} else {
-		fullPrompt = prompt
+		sessionOptions = append(sessionOptions, gollem.WithSessionSystemPrompt(system))
 	}
 
-	// Generate response
-	if err := agent.Execute(ctx, fullPrompt); err != nil {
+	// Create session from LLM client
+	session, err := clientInfo.Client.NewSession(ctx, sessionOptions...)
+	if err != nil {
+		return nil, goerr.Wrap(err, "failed to create LLM session")
+	}
+
+	// Create input for the session
+	input := gollem.Text(prompt)
+
+	// Generate response using session
+	response, err := session.GenerateContent(ctx, input)
+	if err != nil {
 		return nil, goerr.Wrap(err, "failed to generate response")
 	}
 
-	// For generate action, we'll use the full prompt as output for now
-	// This is a simplified implementation - in a real scenario,
-	// the gollem library would provide a way to get the response
-	response := "Generated response" // Placeholder response
+	// Check if response is nil
+	if response == nil {
+		return nil, goerr.New("received nil response from LLM")
+	}
+
+	// Extract text from response
+	var responseText string
+	if len(response.Texts) > 0 {
+		responseText = strings.Join(response.Texts, "")
+	}
 
 	logger.Debug("LLM response generated",
-		slog.Int("response_length", len(response)),
+		slog.Int("response_length", len(responseText)),
 	)
 
 	return &action.Result{
-		Output: response,
+		Output: responseText,
 		Metadata: map[string]interface{}{
 			"provider":        clientInfo.Provider,
 			"model":           clientInfo.Model,
 			"system":          system,
 			"prompt_length":   len(prompt),
-			"response_length": len(response),
+			"response_length": len(responseText),
 		},
 	}, nil
 }
