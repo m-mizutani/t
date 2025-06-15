@@ -30,7 +30,7 @@ tasks:
         args:
           content: "Hello, World!"
 
-  llm-example:
+  llm:
     description: "LLM generation example"
     steps:
       - action: llm.generate
