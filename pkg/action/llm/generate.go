@@ -30,14 +30,28 @@ func (a *GenerateAction) Execute(ctx context.Context, actx *action.Context, step
 	logger.Debug("Executing llm.generate action")
 
 	// Get system message
-	system, err := action.ProcessTemplate(step.System, actx, "llm.generate.system")
-	if err != nil {
-		return nil, goerr.Wrap(err, "failed to process system template")
+	var system string
+	var err error
+	if systemStr := getStringArg(step.Args, "system", ""); systemStr != "" {
+		system, err = action.ProcessTemplate(systemStr, actx, "llm.generate.system")
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to process system template from args")
+		}
+	} else if step.System != "" {
+		system, err = action.ProcessTemplate(step.System, actx, "llm.generate.system")
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to process system template")
+		}
 	}
 
-	// Get prompt
+	// Get prompt - check args.prompt first, then step.Prompt
 	var prompt string
-	if step.Prompt != "" {
+	if promptStr := getStringArg(step.Args, "prompt", ""); promptStr != "" {
+		prompt, err = action.ProcessTemplate(promptStr, actx, "llm.generate.prompt")
+		if err != nil {
+			return nil, goerr.Wrap(err, "failed to process prompt template from args")
+		}
+	} else if step.Prompt != "" {
 		prompt, err = action.ProcessTemplate(step.Prompt, actx, "llm.generate.prompt")
 		if err != nil {
 			return nil, goerr.Wrap(err, "failed to process prompt template")
