@@ -150,11 +150,11 @@ func getLLMClientInfo(ctx context.Context, actx *action.Context, cfg *LLMGenerat
 
 	switch provider {
 	case "openai":
-		client, err = createOpenAIClientTyped(ctx, actx, cfg, llmConfig, model)
+		client, err = createOpenAIClient(ctx, actx, cfg, llmConfig, model)
 	case "claude":
-		client, err = createClaudeClientTyped(ctx, actx, cfg, llmConfig, model)
+		client, err = createClaudeClient(ctx, actx, cfg, llmConfig, model)
 	case "gemini":
-		client, err = createGeminiClientTyped(ctx, actx, cfg, llmConfig, model)
+		client, err = createGeminiClient(ctx, actx, cfg, llmConfig, model)
 	default:
 		return nil, goerr.New("unsupported LLM provider", goerr.Value("provider", provider))
 	}

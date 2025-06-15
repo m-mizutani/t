@@ -62,7 +62,7 @@ tasks:
 # Authentication priority (high to low):
 # 1. Environment variables (recommended for security)
 # 2. Configuration file values
-# 3. Legacy config format (for backward compatibility)
+# 3. Configuration file values
 #
 # Environment variables for authentication:
 # export OPENAI_API_KEY="your-openai-api-key"

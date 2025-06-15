@@ -53,11 +53,11 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 		"output": outputMap,
 		"args":   argsMap,
 
-		// Legacy support
+		// Input support
 		"input": actx.Input,
 	}
 
-	// Add legacy simplified args access: .arg0, .arg1, .arg2, etc. (for backward compatibility)
+	// Add simplified args access: .arg0, .arg1, .arg2, etc.
 	for i, arg := range actx.Args {
 		data["arg"+strconv.Itoa(i)] = arg
 	}
@@ -76,9 +76,9 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 	}
 	data["data"] = metaData
 
-	// Create template with custom functions for backward compatibility
+	// Create template with custom functions
 	tmpl := template.New(templateName).Funcs(template.FuncMap{
-		// Legacy function support for backward compatibility
+		// Function support
 		"arg": func(i int) string {
 			if i >= 0 && i < len(actx.Args) {
 				return actx.Args[i]

@@ -89,17 +89,6 @@ type StepConfig struct {
 	Config interface{} // Action-specific typed configuration
 }
 
-// Legacy StepConfig for backward compatibility during migration
-type LegacyStepConfig struct {
-	ID     string                 `yaml:"id,omitempty"`
-	Action string                 `yaml:"action"`
-	Input  interface{}            `yaml:"input,omitempty"`
-	Path   string                 `yaml:"path,omitempty"`
-	System string                 `yaml:"system,omitempty"`
-	Prompt string                 `yaml:"prompt,omitempty"`
-	Args   map[string]interface{} `yaml:"args,omitempty"`
-}
-
 // Load loads configuration from file
 func Load(configPath string) (*Config, error) {
 	if configPath == "" {

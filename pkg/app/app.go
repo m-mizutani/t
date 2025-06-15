@@ -54,11 +54,6 @@ func New(appCfg Config) (*App, error) {
 	registry.RegisterTyped(&clipboard.ReadAction{})
 	registry.RegisterTyped(&clipboard.WriteAction{})
 
-	// Register legacy actions (using LegacyStepConfig)
-	registry.RegisterLegacy(&file.ExistsAction{})
-	registry.RegisterLegacy(&file.CopyAction{})
-	registry.RegisterLegacy(&llm.SessionAction{})
-
 	// Process RawSteps to typed Steps
 	if err := processSteps(cfg, registry); err != nil {
 		return nil, goerr.Wrap(err, "failed to process steps")
@@ -77,21 +72,15 @@ func processSteps(cfg *config.Config, registry *action.Registry) error {
 		steps := make([]config.StepConfig, 0, len(task.RawSteps))
 
 		for i, rawStep := range task.RawSteps {
-			// Try to parse as typed action
+			// Parse as typed action
 			typedStep, err := registry.ParseStepConfig(rawStep)
 			if err != nil {
-				// If parsing fails, create a temporary legacy-compatible step
-				// This allows gradual migration
-				step := config.StepConfig{
-					Action: rawStep.Action,
-					Config: rawStep.Raw,
-				}
-				steps = append(steps, step)
-			} else {
-				steps = append(steps, *typedStep)
+				return goerr.Wrap(err, "failed to parse step config",
+					goerr.Value("task", taskName),
+					goerr.Value("step", i),
+					goerr.Value("action", rawStep.Action))
 			}
-
-			_ = i // Keep for debugging info if needed
+			steps = append(steps, *typedStep)
 		}
 
 		// Update the task with processed steps
@@ -143,57 +132,6 @@ func (app *App) executeStep(ctx context.Context, step config.StepConfig, actionC
 		}
 
 		return app.handleStepResult(ctx, step, result, actionCtx, logger)
-	}
-
-	// Try legacy action
-	if legacyAction, exists := app.registry.GetLegacy(step.Action); exists {
-		// Convert step config to legacy format
-		legacyStep := config.LegacyStepConfig{
-			Action: step.Action,
-		}
-
-		// Extract args from step.Config if it's a map
-		if configMap, ok := step.Config.(map[string]interface{}); ok {
-			legacyStep.Args = make(map[string]interface{})
-			for key, value := range configMap {
-				switch key {
-				case "id":
-					if idStr, ok := value.(string); ok {
-						legacyStep.ID = idStr
-					}
-				case "system":
-					if systemStr, ok := value.(string); ok {
-						legacyStep.System = systemStr
-					}
-				case "prompt":
-					if promptStr, ok := value.(string); ok {
-						legacyStep.Prompt = promptStr
-					}
-				case "path":
-					if pathStr, ok := value.(string); ok {
-						legacyStep.Path = pathStr
-					}
-				default:
-					legacyStep.Args[key] = value
-				}
-			}
-		}
-
-		// Execute legacy action
-		result, err := legacyAction.Execute(ctx, actionCtx, legacyStep)
-		if err != nil {
-			return goerr.Wrap(err, "legacy action execution failed")
-		}
-
-		return app.handleStepResult(ctx, step, result, actionCtx, logger)
-	}
-
-	// Fall back to legacy action - for now, skip legacy actions
-	// This will be enhanced when we implement proper legacy support
-	if _, exists := app.registry.Get(step.Action); exists {
-		return goerr.New("legacy action not yet supported in new typed system",
-			goerr.Value("action", step.Action),
-			goerr.Value("hint", "action needs to be migrated to TypedAction interface"))
 	}
 
 	return goerr.New("unknown action", goerr.Value("action", step.Action))
