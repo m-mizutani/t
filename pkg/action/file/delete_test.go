@@ -49,8 +49,8 @@ func TestDeleteAction_Execute_DeleteFile(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
@@ -87,8 +87,8 @@ func TestDeleteAction_Execute_DeleteDirectory(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
@@ -116,8 +116,8 @@ func TestDeleteAction_Execute_NonexistentFile(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
@@ -144,12 +144,12 @@ func TestDeleteAction_Execute_WithTemplateProcessing(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: tempPath,
-		Env:   make(map[string]string),
+		Output: tempPath,
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
-		Path: "{{ .input }}",
+		Path: "{{ .output }}",
 	}
 
 	result, err := deleteAction.Execute(ctx, actx, cfg)
@@ -167,8 +167,8 @@ func TestDeleteAction_Execute_InvalidConfigType(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	// Pass wrong config type
@@ -184,8 +184,8 @@ func TestDeleteAction_Execute_EmptyPath(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
@@ -202,8 +202,8 @@ func TestDeleteAction_Execute_TemplateProcessingError(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{
@@ -241,8 +241,8 @@ func TestDeleteAction_Execute_PermissionDenied(t *testing.T) {
 	deleteAction := &DeleteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &FileDeleteConfig{

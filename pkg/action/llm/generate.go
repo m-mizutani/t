@@ -67,8 +67,8 @@ func (a *GenerateAction) Execute(ctx context.Context, actx *action.Context, conf
 		if err != nil {
 			return nil, goerr.Wrap(err, "failed to process prompt template")
 		}
-	} else if actx.Input != nil {
-		prompt = fmt.Sprintf("%v", actx.Input)
+	} else if actx.Output != nil {
+		prompt = fmt.Sprintf("%v", actx.Output)
 	} else {
 		return nil, goerr.New("no prompt specified for llm.generate action")
 	}

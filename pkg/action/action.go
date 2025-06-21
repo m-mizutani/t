@@ -18,7 +18,7 @@ type Context struct {
 	Config        *config.Config
 	Args          []string
 	Env           map[string]string
-	Input         interface{}
+	Output        interface{}
 	Data          map[string]interface{}
 	ActionOutputs map[string]interface{} // Store outputs by action ID
 }

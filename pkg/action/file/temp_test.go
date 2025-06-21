@@ -39,7 +39,7 @@ func TestTempAction_Execute_BasicTempFile(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -72,7 +72,7 @@ func TestTempAction_Execute_WithContent(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -97,15 +97,15 @@ func TestTempAction_Execute_WithContent(t *testing.T) {
 	assert.Equal(t, len("Hello, World!"), result.Metadata["bytes_written"])
 }
 
-func TestTempAction_Execute_WithInputContent(t *testing.T) {
+func TestTempAction_Execute_WithOutputContent(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "Input content",
+		Output: "Output content",
 		Env:   make(map[string]string),
 	}
 
-	cfg := &FileTempConfig{} // No content specified, should use input
+	cfg := &FileTempConfig{} // No content specified, should use output
 
 	result, err := tempAction.Execute(ctx, actx, cfg)
 	require.NoError(t, err)
@@ -118,17 +118,17 @@ func TestTempAction_Execute_WithInputContent(t *testing.T) {
 	// Verify file content
 	content, err := os.ReadFile(tempPath)
 	require.NoError(t, err)
-	assert.Equal(t, "Input content", string(content))
+	assert.Equal(t, "Output content", string(content))
 
 	// Check metadata
-	assert.Equal(t, len("Input content"), result.Metadata["bytes_written"])
+	assert.Equal(t, len("Output content"), result.Metadata["bytes_written"])
 }
 
 func TestTempAction_Execute_WithCustomPrefix(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -156,7 +156,7 @@ func TestTempAction_Execute_WithCustomSuffix(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -186,7 +186,7 @@ func TestTempAction_Execute_WithCustomDirectory(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -213,12 +213,12 @@ func TestTempAction_Execute_WithTemplateProcessing(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "World",
+		Output: "World",
 		Env:   make(map[string]string),
 	}
 
 	cfg := &FileTempConfig{
-		Content: "Hello, {{ .input }}!",
+		Content: "Hello, {{ .output }}!",
 		Prefix:  "greeting-",
 	}
 
@@ -244,7 +244,7 @@ func TestTempAction_Execute_InvalidConfigType(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -261,7 +261,7 @@ func TestTempAction_Execute_TemplateProcessingWithMissingVariable(t *testing.T) 
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -287,7 +287,7 @@ func TestTempAction_Execute_InvalidDirectory(t *testing.T) {
 	tempAction := &TempAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 

@@ -34,8 +34,8 @@ func TestWriteAction_Execute_WithContent(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
-		Env:   make(map[string]string),
+		Output: "test output",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &ClipboardWriteConfig{
@@ -59,15 +59,15 @@ func TestWriteAction_Execute_WithContent(t *testing.T) {
 	assert.Equal(t, 1, result.Metadata["lines"]) // No newlines
 }
 
-func TestWriteAction_Execute_WithInputContent(t *testing.T) {
+func TestWriteAction_Execute_WithOutputContent(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "Input content",
-		Env:   make(map[string]string),
+		Output: "Output content",
+		Env:    make(map[string]string),
 	}
 
-	cfg := &ClipboardWriteConfig{} // No content specified, should use input
+	cfg := &ClipboardWriteConfig{} // No content specified, should use output
 
 	result, err := writeAction.Execute(ctx, actx, cfg)
 	if err != nil && (err.Error() == "failed to initialize clipboard" ||
@@ -79,10 +79,10 @@ func TestWriteAction_Execute_WithInputContent(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Check output
-	assert.Equal(t, "Input content", result.Output)
+	assert.Equal(t, "Output content", result.Output)
 
 	// Check metadata
-	assert.Equal(t, len("Input content"), result.Metadata["length"])
+	assert.Equal(t, len("Output content"), result.Metadata["length"])
 	assert.Equal(t, 1, result.Metadata["lines"])
 }
 
@@ -90,12 +90,12 @@ func TestWriteAction_Execute_WithTemplateProcessing(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "World",
-		Env:   make(map[string]string),
+		Output: "World",
+		Env:    make(map[string]string),
 	}
 
 	cfg := &ClipboardWriteConfig{
-		Content: "Hello, {{ .input }}!",
+		Content: "Hello, {{ .output }}!",
 	}
 
 	result, err := writeAction.Execute(ctx, actx, cfg)
@@ -119,7 +119,7 @@ func TestWriteAction_Execute_WithMultilineContent(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -149,7 +149,7 @@ func TestWriteAction_Execute_InvalidConfigType(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -166,7 +166,7 @@ func TestWriteAction_Execute_NoContentSpecified(t *testing.T) {
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: nil, // No input
+		Output: nil, // No output
 		Env:   make(map[string]string),
 	}
 
@@ -182,7 +182,7 @@ func TestWriteAction_Execute_TemplateProcessingWithMissingVariable(t *testing.T)
 	writeAction := &WriteAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -210,7 +210,7 @@ func TestClipboardWriteConfig_Validation(t *testing.T) {
 		valid  bool
 	}{
 		{
-			name:   "valid empty config (will use input)",
+			name:   "valid empty config (will use output)",
 			config: ClipboardWriteConfig{},
 			valid:  true,
 		},

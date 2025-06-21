@@ -118,16 +118,16 @@ func (a *TempAction) Execute(ctx context.Context, actx *action.Context, config i
 			slog.String("path", tempPath),
 			slog.Int("bytes", bytesWritten),
 		)
-	} else if actx.Input != nil {
-		// Write input to temp file
-		content := fmt.Sprintf("%v", actx.Input)
+	} else if actx.Output != nil {
+		// Write output to temp file
+		content := fmt.Sprintf("%v", actx.Output)
 		if _, err := tempFile.WriteString(content); err != nil {
 			os.Remove(tempPath) // Clean up on error
-			return nil, goerr.Wrap(err, "failed to write input to temp file")
+			return nil, goerr.Wrap(err, "failed to write output to temp file")
 		}
 		bytesWritten = len(content)
 
-		logger.Debug("Input written to temp file",
+		logger.Debug("Output written to temp file",
 			slog.String("path", tempPath),
 			slog.Int("bytes", bytesWritten),
 		)

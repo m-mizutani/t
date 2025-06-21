@@ -61,8 +61,8 @@ func (a *WriteAction) Execute(ctx context.Context, actx *action.Context, config 
 		if err != nil {
 			return nil, goerr.Wrap(err, "failed to process content template")
 		}
-	} else if actx.Input != nil {
-		content = fmt.Sprintf("%v", actx.Input)
+	} else if actx.Output != nil {
+		content = fmt.Sprintf("%v", actx.Output)
 	} else {
 		return nil, goerr.New("no content specified for file.write action")
 	}

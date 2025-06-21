@@ -141,7 +141,7 @@ func (app *App) executeStep(ctx context.Context, step config.StepConfig, actionC
 func (app *App) handleStepResult(ctx context.Context, step config.StepConfig, result *action.Result, actionCtx *action.Context, logger *slog.Logger) error {
 	// Store result in context for next step
 	if result != nil && result.Output != nil {
-		actionCtx.Input = result.Output
+		actionCtx.Output = result.Output
 
 		// Store output by action ID if specified (extract from config)
 		var stepID string

@@ -34,7 +34,7 @@ func TestReadAction_Execute_BasicRead(t *testing.T) {
 	readAction := &ReadAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -70,7 +70,7 @@ func TestReadAction_Execute_InvalidConfigType(t *testing.T) {
 	readAction := &ReadAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 

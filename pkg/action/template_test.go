@@ -21,10 +21,10 @@ func TestProcessTemplate_EmptyTemplate(t *testing.T) {
 
 func TestProcessTemplate_SimpleOutput(t *testing.T) {
 	actx := &Context{
-		Input: "hello world",
-		Args:  []string{},
-		Env:   map[string]string{},
-		Data:  map[string]interface{}{},
+		Output: "hello world",
+		Args:   []string{},
+		Env:    map[string]string{},
+		Data:   map[string]interface{}{},
 	}
 
 	result, err := ProcessTemplate("{{ .output }}", actx, "test")
@@ -34,10 +34,10 @@ func TestProcessTemplate_SimpleOutput(t *testing.T) {
 
 func TestProcessTemplate_OutputWithSpaces(t *testing.T) {
 	actx := &Context{
-		Input: "  hello world  \n",
-		Args:  []string{},
-		Env:   map[string]string{},
-		Data:  map[string]interface{}{},
+		Output: "  hello world  \n",
+		Args:   []string{},
+		Env:    map[string]string{},
+		Data:   map[string]interface{}{},
 	}
 
 	result, err := ProcessTemplate("{{ .output }}", actx, "test")
@@ -45,17 +45,17 @@ func TestProcessTemplate_OutputWithSpaces(t *testing.T) {
 	assert.Equal(t, "hello world", result) // Should be trimmed
 }
 
-func TestProcessTemplate_Input(t *testing.T) {
+func TestProcessTemplate_Output_Legacy(t *testing.T) {
 	actx := &Context{
-		Input: "input_value",
-		Args:  []string{},
-		Env:   map[string]string{},
-		Data:  map[string]interface{}{},
+		Output: "output_value",
+		Args:   []string{},
+		Env:    map[string]string{},
+		Data:   map[string]interface{}{},
 	}
 
-	result, err := ProcessTemplate("{{ .input }}", actx, "test")
+	result, err := ProcessTemplate("{{ .output }}", actx, "test")
 	require.NoError(t, err)
-	assert.Equal(t, "input_value", result)
+	assert.Equal(t, "output_value", result)
 }
 
 func TestProcessTemplate_Args(t *testing.T) {
@@ -198,10 +198,10 @@ func TestProcessTemplate_Data(t *testing.T) {
 
 func TestProcessTemplate_ActionOutputs(t *testing.T) {
 	actx := &Context{
-		Input: "current_output",
-		Args:  []string{},
-		Env:   map[string]string{},
-		Data:  map[string]interface{}{},
+		Output: "current_output",
+		Args:   []string{},
+		Env:    map[string]string{},
+		Data:   map[string]interface{}{},
 		ActionOutputs: map[string]interface{}{
 			"action1": "output1",
 			"action2": "output2",
@@ -252,8 +252,8 @@ func TestProcessTemplate_ActionOutputs(t *testing.T) {
 
 func TestProcessTemplate_ComplexTemplate(t *testing.T) {
 	actx := &Context{
-		Input: "input_data",
-		Args:  []string{"arg1", "arg2"},
+		Output: "output_data",
+		Args:   []string{"arg1", "arg2"},
 		Env: map[string]string{
 			"ENV_VAR": "env_value",
 		},
@@ -265,19 +265,17 @@ func TestProcessTemplate_ComplexTemplate(t *testing.T) {
 		},
 	}
 
-	template := `Input: {{ .input }}
+	template := `Output: {{ .output }}
 Args: {{ .arg0 }}, {{ .arg1 }}
 Env: {{ .env.ENV_VAR }}
 Data: {{ .data.meta_key }}
-Previous: {{ .output.previous_action }}
-Current: {{ .output }}`
+Previous: {{ .output.previous_action }}`
 
-	expected := `Input: input_data
+	expected := `Output: output_data
 Args: arg1, arg2
 Env: env_value
 Data: meta_value
-Previous: previous_output
-Current: input_data`
+Previous: previous_output`
 
 	result, err := ProcessTemplate(template, actx, "test")
 	require.NoError(t, err)
@@ -329,8 +327,8 @@ func TestProcessTemplate_MissingValues(t *testing.T) {
 
 func TestProcessTemplate_SpecialCharacters(t *testing.T) {
 	actx := &Context{
-		Input: "hello\nworld\ttab",
-		Args:  []string{"arg with spaces", "arg\"with\"quotes", "arg'with'single"},
+		Output: "hello\nworld\ttab",
+		Args:   []string{"arg with spaces", "arg\"with\"quotes", "arg'with'single"},
 		Env: map[string]string{
 			"SPECIAL_CHARS": "value\nwith\nnewlines",
 		},
@@ -345,8 +343,8 @@ func TestProcessTemplate_SpecialCharacters(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "input with newlines",
-			template: "{{ .input }}",
+			name:     "output with newlines",
+			template: "{{ .output }}",
 			expected: "hello\nworld\ttab",
 		},
 		{
@@ -423,7 +421,7 @@ func TestProcessTemplate_OutputMap(t *testing.T) {
 
 	// Test with non-string value
 	outputMap[""] = 123
-	assert.Equal(t, "", outputMap.String())
+	assert.Equal(t, "123", outputMap.String())
 
 	// Test with nil value
 	outputMap[""] = nil
@@ -436,9 +434,9 @@ func TestProcessTemplate_OutputMap(t *testing.T) {
 
 func TestProcessTemplate_DifferentTypes(t *testing.T) {
 	actx := &Context{
-		Input: 42,
-		Args:  []string{},
-		Env:   map[string]string{},
+		Output: 42,
+		Args:   []string{},
+		Env:    map[string]string{},
 		Data: map[string]interface{}{
 			"bool_val":  true,
 			"float_val": 3.14159,
@@ -458,8 +456,8 @@ func TestProcessTemplate_DifferentTypes(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "int input",
-			template: "{{ .input }}",
+			name:     "int output",
+			template: "{{ .output }}",
 			expected: "42",
 		},
 		{
@@ -501,15 +499,15 @@ func TestProcessTemplate_EdgeCases(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "nil input",
+			name: "nil output",
 			actx: &Context{
-				Input: nil,
-				Args:  []string{},
-				Env:   map[string]string{},
-				Data:  map[string]interface{}{},
+				Output: nil,
+				Args:   []string{},
+				Env:    map[string]string{},
+				Data:   map[string]interface{}{},
 			},
-			template: "{{ .input }}",
-			expected: "<no value>",
+			template: "{{ .output }}",
+			expected: "",
 		},
 		{
 			name: "empty args",
@@ -558,7 +556,11 @@ func TestProcessTemplate_EdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := ProcessTemplate(tt.template, tt.actx, "test")
 			require.NoError(t, err)
-			assert.Contains(t, result, "<no value>")
+			if tt.expected == "" {
+				assert.Equal(t, tt.expected, result)
+			} else {
+				assert.Contains(t, result, "<no value>")
+			}
 		})
 	}
 }
@@ -566,7 +568,7 @@ func TestProcessTemplate_EdgeCases(t *testing.T) {
 func TestProcessTemplate_Performance(t *testing.T) {
 	// Test with large data sets
 	actx := &Context{
-		Input:         "performance test input",
+		Output:        "performance test output",
 		Args:          make([]string, 100),
 		Env:           make(map[string]string),
 		Data:          make(map[string]interface{}),
@@ -581,12 +583,12 @@ func TestProcessTemplate_Performance(t *testing.T) {
 		actx.ActionOutputs["action_"+string(rune(i))] = "output_" + string(rune(i))
 	}
 
-	template := "{{ .input }} {{ .arg0 }} {{ .env.ENV_VAR_0 }} {{ .data.data_key_0 }} {{ .output.action_0 }}"
+	template := "{{ .output }} {{ .arg0 }} {{ .env.ENV_VAR_0 }} {{ .data.data_key_0 }} {{ .output.action_0 }}"
 
 	// Run multiple times to test performance
 	for i := 0; i < 100; i++ {
 		result, err := ProcessTemplate(template, actx, "performance_test")
 		require.NoError(t, err)
-		assert.Contains(t, result, "performance test input")
+		assert.Contains(t, result, "performance test output")
 	}
 }

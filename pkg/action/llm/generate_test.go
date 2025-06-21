@@ -39,7 +39,7 @@ func TestGenerateAction_Execute_InvalidConfigType(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -64,7 +64,7 @@ func TestGenerateAction_Execute_NoPromptSpecified(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: nil, // No input
+		Output: nil, // No output
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -93,7 +93,7 @@ func TestGenerateAction_Execute_WithInputPrompt(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "Say hello",
+		Output: "Say hello",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -109,7 +109,7 @@ func TestGenerateAction_Execute_WithInputPrompt(t *testing.T) {
 		},
 	}
 
-	cfg := &LLMGenerateConfig{} // Will use input as prompt
+	cfg := &LLMGenerateConfig{} // Will use output as prompt
 
 	result, err := generateAction.Execute(ctx, actx, cfg)
 	if err != nil {
@@ -140,7 +140,7 @@ func TestGenerateAction_Execute_WithPromptConfig(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "ignored input",
+		Output: "ignored output",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -189,7 +189,7 @@ func TestGenerateAction_Execute_WithSystemMessage(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -239,7 +239,7 @@ func TestGenerateAction_Execute_WithTemplateProcessing(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "World",
+		Output: "World",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -257,7 +257,7 @@ func TestGenerateAction_Execute_WithTemplateProcessing(t *testing.T) {
 
 	cfg := &LLMGenerateConfig{
 		System: "You are a greeting assistant.",
-		Prompt: "Say hello to {{ .input }}",
+		Prompt: "Say hello to {{ .output }}",
 	}
 
 	result, err := generateAction.Execute(ctx, actx, cfg)
@@ -282,7 +282,7 @@ func TestGenerateAction_Execute_UnsupportedProvider(t *testing.T) {
 	generateAction := &GenerateAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 		Config: &config.Config{
 			Defaults: config.DefaultConfig{
@@ -311,7 +311,7 @@ func TestLLMGenerateConfig_Validation(t *testing.T) {
 		valid  bool
 	}{
 		{
-			name:   "valid empty config (will use input)",
+			name:   "valid empty config (will use output)",
 			config: LLMGenerateConfig{},
 			valid:  true,
 		},

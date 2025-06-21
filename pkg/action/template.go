@@ -1,6 +1,7 @@
 package action
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"text/template"
@@ -14,8 +15,17 @@ type OutputMap map[string]interface{}
 // String returns the current output as string (for {{ .output }})
 func (o OutputMap) String() string {
 	if current, exists := o[""]; exists && current != nil {
-		if str, ok := current.(string); ok {
-			return strings.TrimSpace(str)
+		switch v := current.(type) {
+		case string:
+			return strings.TrimSpace(v)
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			return fmt.Sprintf("%v", v)
+		case float32, float64:
+			return fmt.Sprintf("%v", v)
+		case bool:
+			return fmt.Sprintf("%v", v)
+		default:
+			return fmt.Sprintf("%v", v)
 		}
 	}
 	return ""
@@ -31,7 +41,7 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 	outputMap := make(OutputMap)
 
 	// Add current output with empty key (for {{ .output }})
-	outputMap[""] = actx.Input
+	outputMap[""] = actx.Output
 
 	// Add all action outputs (for {{ .output.action_id }})
 	for actionID, output := range actx.ActionOutputs {
@@ -42,9 +52,6 @@ func ProcessTemplate(templateStr string, actx *Context, templateName string) (st
 	data := map[string]interface{}{
 		// Structured access
 		"output": outputMap,
-
-		// Input support
-		"input": actx.Input,
 	}
 
 	// Add simplified args access: .arg0, .arg1, .arg2, etc.

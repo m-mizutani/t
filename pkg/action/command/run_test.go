@@ -38,7 +38,7 @@ func TestRunAction_Execute_SimpleCommand(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -67,7 +67,7 @@ func TestRunAction_Execute_WithWorkingDirectory(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -89,12 +89,12 @@ func TestRunAction_Execute_WithTemplateProcessing(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "world",
+		Output: "world",
 		Env:   make(map[string]string),
 	}
 
 	cfg := &CommandRunConfig{
-		Cmd: "echo 'hello {{ .input }}'",
+		Cmd: "echo 'hello {{ .output }}'",
 	}
 
 	result, err := runAction.Execute(ctx, actx, cfg)
@@ -109,7 +109,7 @@ func TestRunAction_Execute_WithEnvironmentVariables(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env: map[string]string{
 			"TEST_VAR": "test_value",
 		},
@@ -138,7 +138,7 @@ func TestRunAction_Execute_CommandFailure(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -159,7 +159,7 @@ func TestRunAction_Execute_CommandWithStderr(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -185,7 +185,7 @@ func TestRunAction_Execute_InvalidConfigType(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -202,7 +202,7 @@ func TestRunAction_Execute_TemplateWithMissingVariable(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -223,7 +223,7 @@ func TestRunAction_Execute_NonexistentWorkingDirectory(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -245,7 +245,7 @@ func TestRunAction_Execute_LongRunningCommand(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -272,7 +272,7 @@ func TestRunAction_Execute_CancelledContext(t *testing.T) {
 	runAction := &RunAction{}
 	ctx, cancel := context.WithCancel(context.Background())
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
@@ -303,7 +303,7 @@ func TestRunAction_Execute_MultilineOutput(t *testing.T) {
 	runAction := &RunAction{}
 	ctx := context.Background()
 	actx := &action.Context{
-		Input: "test input",
+		Output: "test output",
 		Env:   make(map[string]string),
 	}
 
