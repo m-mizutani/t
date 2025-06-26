@@ -1,0 +1,11 @@
+This is a sample text file for testing the file.read action.
+
+It contains multiple lines and demonstrates how the task runner
+can read file content and pass it to other actions.
+
+Lines:
+1. First line
+2. Second line
+3. Third line
+
+End of sample file. 

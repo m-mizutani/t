@@ -1,0 +1,136 @@
+defaults:
+  llm:
+    provider: openai
+    model: gpt-4
+    temperature: 0.3
+
+tasks:
+  hello:
+    description: "Simple hello world task"
+    steps:
+      - action: stdout.write
+        content: "Hello, World!"
+
+  echo:
+    description: "Echo the input to stdout"
+    steps:
+      - action: stdout.write
+        content: "{{ .output }}"
+
+  file-test:
+    description: "Test file operations (create, read, delete)"
+    steps:
+      - action: file.write
+        path: "/tmp/test.txt"
+        content: "This is a test file created by t"
+      - action: file.read
+        path: "/tmp/test.txt"
+      - action: stdout.write
+        content: "File content: {{ .output }}"
+      - action: file.delete
+        path: "/tmp/test.txt"
+
+  clipboard-test:
+    description: "Read content from clipboard"
+    steps:
+      - action: clipboard.read
+      - action: stdout.write
+        content: "Clipboard content: {{ .output }}"
+
+  clipboard-write-test:
+    description: "Write content to clipboard"
+    steps:
+      - action: clipboard.write
+        content: "Hello from t clipboard!"
+      - action: stdout.write
+        content: "Content written to clipboard successfully"
+
+  clipboard-full-test:
+    description: "Full clipboard test (write and read)"
+    steps:
+      - action: clipboard.write
+        content: "Test message from t"
+      - action: clipboard.read
+      - action: stdout.write
+        content: "Clipboard content: {{ .output }}"
+
+  command-test:
+    description: "Execute system command and display output"
+    steps:
+      - action: command.run
+        cmd: "echo 'Hello from command'"
+      - action: stdout.write
+        content: "Command output: {{ .output }}"
+
+  temp-file-test:
+    description: "Test temporary file operations"
+    steps:
+      - id: create_temp
+        action: file.temp
+        content: "Temporary file content"
+        prefix: "t-test-"
+        suffix: ".txt"
+      - action: file.read
+        path: "{{ .output }}"
+      - action: stdout.write
+        content: "Temp file content: {{ .output }}"
+      - action: file.delete
+        path: "{{ .output.create_temp }}"
+
+  llm-test:
+    description: "Test LLM generation with Japanese response"
+    steps:
+      - action: llm.generate
+        system: "You are a helpful assistant."
+        prompt: "Say hello in Japanese"
+      - action: stdout.write
+        content: "LLM response: {{ .output }}"
+
+  # Template examples
+  template-example:
+    description: "Demonstrate template variable usage"
+    steps:
+      - id: temp_file
+        action: file.temp
+        content: "Hello {{ .arg0 }}!"
+        prefix: "example-"
+      - action: file.read
+        path: "{{ .output }}"
+      - action: stdout.write
+        content: "File content: {{ .output }}"
+      - action: file.delete
+        path: "{{ .output.temp_file }}"
+
+  file-with-args:
+    description: "Read file specified by command line argument"
+    steps:
+      - action: file.read
+        path: "{{ .arg0 }}"
+      - action: stdout.write
+        content: "Content of {{ .arg0 }}:\n{{ .output }}"
+
+  action-id-example:
+    description: "Example of using action IDs for referencing outputs"
+    steps:
+      - id: first_file
+        action: file.temp
+        content: "First file content"
+      - id: second_file
+        action: file.temp
+        content: "Second file content"
+      - action: stdout.write
+        content: "First: {{ .output.first_file }}, Second: {{ .output.second_file }}"
+
+  multiple-args-example:
+    description: "Example of using multiple command line arguments"
+    steps:
+      - action: stdout.write
+        content: "Processing {{ .arg0 }} with options {{ .arg1 }} and {{ .arg2 }}"
+
+  environment-example:
+    description: "Example of using environment variables"
+    steps:
+      - action: file.temp
+        content: "Hello {{ .env.USER }} from {{ .env.HOME }}"
+      - action: stdout.write
+        content: "Created file for user {{ .env.USER }}: {{ .output }}" 
